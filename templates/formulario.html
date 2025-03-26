@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reserva tu Cita</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+    async function actualizarHoras() {
+        const fecha = document.getElementById("fecha").value;
+        const peluquero = document.getElementById("peluquero").value;
+        if (fecha && peluquero) {
+            const res = await fetch("/horas_disponibles", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fecha: fecha, peluquero: peluquero })
+            });
+            const horas = await res.json();
+            const selectHora = document.getElementById("hora");
+            selectHora.innerHTML = "";
+
+            if (horas.length === 0) {
+                let opt = document.createElement("option");
+                opt.value = "";
+                opt.text = "No disponible";
+                selectHora.appendChild(opt);
+            } else {
+                horas.forEach(h => {
+                    let opt = document.createElement("option");
+                    opt.value = h;
+                    opt.text = h;
+                    selectHora.appendChild(opt);
+                });
+            }
+        }
+    }
+    </script>
+</head>
+<body>
+    <form method="POST">
+        <h2>Reserva tu cita</h2>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" required><br>
+
+        <label for="telefono">Teléfono (sin +34):</label>
+        <input type="text" name="telefono" required><br>
+
+        <label for="fecha">Fecha:</label>
+        <input type="date" name="fecha" id="fecha" required onchange="actualizarHoras()"><br>
+
+        <label for="peluquero">Peluquero:</label>
+        <select name="peluquero" id="peluquero" required onchange="actualizarHoras()">
+            <option value="">Selecciona</option>
+            {% for p in peluqueros %}
+                <option value="{{ p.id_peluquero }}">{{ p.nombre_completo }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="hora">Hora:</label>
+        <select name="hora" id="hora" required></select><br>
+
+        <label for="servicio">Servicio:</label>
+        <input type="text" name="servicio" required><br>
+
+        <input type="submit" value="Reservar">
+    </form>
+</body>
+</html>
